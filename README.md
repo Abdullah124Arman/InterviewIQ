@@ -1,3 +1,4 @@
+---
 # 🎯 InterviewIQ — AI Mock Interview & Placement Preparation Platform
 
 > Practice smarter. Get hired faster.
@@ -13,7 +14,7 @@
 👉 [InterviewIQ on Streamlit Cloud](https://interviewiq-dqngpaawqyy8zczshahyf2.streamlit.app/)
 
 ## 📌 Backend API
-👉 [Flask REST API on Render](https://interviewiq-backend-2i3i.onrender.com)
+👉 [Flask REST API on Render](https://interviewiq-backend-2i3i.onrender.com/)
 
 ---
 
@@ -76,7 +77,7 @@ Built as a complete software product — not a demo — with real authentication
 
 ## ⚙️ How It Works
 
-```plaintext
+```
 User Signup/Login
       ↓
 JWT Token Issued
@@ -92,28 +93,29 @@ LLaMA 3.3-70b evaluates answer → Score + Feedback + Ideal Answer
 Results stored in PostgreSQL (Supabase)
       ↓
 Dashboard updates with performance analytics
+```
 
-🗄️ Database Schema
+---
 
-users
+## 🗄️ Database Schema
 
-id, username, email, password_hash, created_at
+**users**
+- id, username, email, password_hash, created_at
 
-interview_sessions
+**interview_sessions**
+- id, user_id, role, topic, difficulty, timestamp
 
-id, user_id, role, topic, difficulty, timestamp
+**questions**
+- id, session_id, generated_question
 
-questions
+**answers**
+- id, question_id, user_answer, score, correctness_feedback, clarity_feedback, communication_feedback, improvement_suggestions, ideal_answer
 
-id, session_id, generated_question
+---
 
-answers
+## 📁 Project Structure
 
-id, question_id, user_answer, score, correctness_feedback, clarity_feedback, communication_feedback, improvement_suggestions, ideal_answer
-
-
-
-📁 Project Structure
+```
 InterviewIQ/
 │
 ├── frontend/
@@ -148,33 +150,53 @@ InterviewIQ/
 ├── requirements.txt
 ├── .env.example
 └── README.md
-🏃 Run Locally
-1. Clone the repository
+```
+
+---
+
+## 🏃 Run Locally
+
+### 1. Clone the repository
+```bash
 git clone https://github.com/Abdullah124Arman/InterviewIQ.git
 cd InterviewIQ
-2. Create virtual environment
+```
+
+### 2. Create virtual environment
+```bash
 python -m venv venv
 venv\Scripts\activate
-3. Install dependencies
+```
+
+### 3. Install dependencies
+```bash
 pip install -r requirements.txt
-4. Set up environment variables
+```
 
-Create a .env file:
-
+### 4. Set up environment variables
+Create a `.env` file:
+```
 GROQ_API_KEY=your_groq_api_key
 DATABASE_URL=your_supabase_postgresql_url
 JWT_SECRET_KEY=your_jwt_secret
-5. Run Backend
+```
+
+### 5. Run Backend
+```bash
 cd backend
 python app.py
-6. Run Frontend
+```
+
+### 6. Run Frontend
+```bash
 cd frontend
 streamlit run app.py
+```
 
+---
 
-👨‍💻 Author
+## 👨‍💻 Author
 
-Abdullah Arman — B.Tech CSE, Parul University
-
-GitHub: @Abdullah124Arman
-LinkedIn: Abdullah Arman
+**Abdullah Arman** — B.Tech CSE, Parul University
+- GitHub: [@Abdullah124Arman](https://github.com/Abdullah124Arman)
+- LinkedIn: [Abdullah Arman](https://linkedin.com/in/abdullah-arman-755a123b3/)
