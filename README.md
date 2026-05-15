@@ -1,4 +1,3 @@
----
 # 🎯 InterviewIQ — AI Mock Interview & Placement Preparation Platform
 
 > Practice smarter. Get hired faster.
