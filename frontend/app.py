@@ -7,7 +7,7 @@ from PyPDF2 import PdfReader
 
 st.set_page_config(page_title="InterviewIQ", layout="wide")
 
-BACKEND_URL = "http://127.0.0.1:5000"
+BACKEND_URL = st.secrets["BACKEND_URL"]
 
 # =========================
 # SESSION STATE
