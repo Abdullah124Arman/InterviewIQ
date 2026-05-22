@@ -3,11 +3,12 @@ import requests
 import pandas as pd
 import plotly.express as px
 from PyPDF2 import PdfReader
+from streamlit_mic_recorder import mic_recorder
 
 
 st.set_page_config(page_title="InterviewIQ", layout="wide")
 
-BACKEND_URL = st.secrets["BACKEND_URL"]
+BACKEND_URL = "http://127.0.0.1:5000"
 
 # =========================
 # SESSION STATE
@@ -21,6 +22,13 @@ if "username" not in st.session_state:
 
 if "page" not in st.session_state:
     st.session_state.page = "Login"
+if "question" not in st.session_state:
+     st.session_state.question = ""
+
+if "voice_text" not in st.session_state:
+    st.session_state.voice_text = ""
+if "transcribed_text" not in st.session_state:
+    st.session_state.transcribed_text = ""
 
 # =========================
 # UI
@@ -175,6 +183,8 @@ elif page == "Login":
 
                     st.session_state.token = data["access_token"]
                     st.session_state.username = data["username"]
+                    st.session_state.question = ""
+                    st.session_state.voice_text = ""
 
                     st.success("Login successful")
 
@@ -404,7 +414,6 @@ View:
     st.write("4. Submit your answer")
 
     st.write("5. Improve using AI feedback")
-
 # =========================
 # MOCK INTERVIEW
 # =========================
@@ -422,7 +431,6 @@ elif page == "Mock Interview":
     )
 
     resume_text = ""
-
     resume_uploaded = False
 
     if uploaded_resume is not None:
@@ -434,7 +442,6 @@ elif page == "Mock Interview":
             text = pdf_page.extract_text()
 
             if text:
-
                 resume_text += text
 
         resume_uploaded = True
@@ -475,18 +482,23 @@ elif page == "Mock Interview":
         topic = "Resume Based"
         difficulty = "Personalized"
 
+    # ── Session State Initialization ──
     if "question" not in st.session_state:
-
         st.session_state.question = ""
 
     if "evaluation" not in st.session_state:
-
         st.session_state.evaluation = ""
 
     if "previous_questions" not in st.session_state:
-
         st.session_state.previous_questions = []
 
+    if "transcribed_text" not in st.session_state:
+        st.session_state.transcribed_text = ""
+
+    if "last_audio_id" not in st.session_state:
+        st.session_state.last_audio_id = None
+
+    # ── Generate Question Button ──
     if st.button("Generate Question"):
 
         response = requests.post(
@@ -497,11 +509,11 @@ elif page == "Mock Interview":
                 "difficulty": difficulty,
                 "resume_text": resume_text,
                 "previous_questions":
-                st.session_state.previous_questions
+                    st.session_state.previous_questions
             },
             headers={
                 "Authorization":
-                f"Bearer {st.session_state.token}"
+                    f"Bearer {st.session_state.token}"
             }
         )
 
@@ -512,16 +524,23 @@ elif page == "Mock Interview":
             st.session_state.question = (
                 data["question"]
             )
+
             st.session_state.session_id = (
-    data["session_id"]
-)
+                data["session_id"]
+            )
 
             st.session_state.previous_questions.append(
                 data["question"]
             )
 
+            # Clear everything for fresh start
             st.session_state.evaluation = ""
+            st.session_state.transcribed_text = ""
+            st.session_state.last_audio_id = None
 
+            st.rerun()
+
+    # ── Question + Answer Section ──
     if st.session_state.question:
 
         st.subheader("Interview Question")
@@ -530,61 +549,120 @@ elif page == "Mock Interview":
             st.session_state.question
         )
 
+        # No key= used here so value= always works
         answer = st.text_area(
-            "Your Answer"
+            "Your Answer",
+            value=st.session_state.get(
+                "transcribed_text", ""
+            ),
+            height=150
         )
 
+        st.markdown("### 🎤 Voice Answer")
+
+        audio = mic_recorder(
+            start_prompt="🎙️ Start Recording",
+            stop_prompt="⏹️ Stop Recording",
+            key="mic"
+        )
+
+        # ── Audio Transcription (with loop guard) ──
+        if audio and audio.get("id") != st.session_state.last_audio_id:
+
+            st.session_state.last_audio_id = audio["id"]
+
+            with st.spinner("Transcribing your voice..."):
+
+                files = {
+                    "audio": (
+                        "audio.wav",
+                        audio["bytes"],
+                        "audio/wav"
+                    )
+                }
+
+                response = requests.post(
+                    f"{BACKEND_URL}/transcribe-audio",
+                    files=files
+                )
+
+            if response.status_code == 200:
+
+                transcribed_text = (
+                    response.json()["text"]
+                )
+
+                # Only update transcribed_text
+                # no answer_box manipulation needed
+                st.session_state.transcribed_text = (
+                    transcribed_text
+                )
+
+                st.success(
+                    "Voice recorded successfully!"
+                )
+                st.rerun()
+
+            else:
+
+                st.error(
+                    "Transcription failed. Please try again."
+                )
+
+        # ── Evaluate & Next Question Buttons ──
         col1, col2 = st.columns(2)
 
         with col1:
 
             if st.button("Evaluate Answer"):
-                if not answer.strip():
+
+                # Read directly from answer variable
+                # not from session state answer_box
+                current_answer = answer
+
+                if not current_answer.strip():
 
                     st.warning(
-        "Please enter an answer first."
-    )
-
-                    st.stop()
-
-                response = requests.post(
-                    f"{BACKEND_URL}/evaluate-answer",
-                    json={
-                        "session_id":
-                         st.session_state.session_id,
-                        "question":
-                        st.session_state.question,
-
-                        "answer":
-                        answer,
-
-                        "role":
-                        role if role else "Resume Interview",
-
-                        "topic":
-                        topic if topic else "Resume Based",
-
-                        "difficulty":
-                        difficulty if difficulty else "Personalized"
-                    },
-                    headers={
-                        "Authorization":
-                        f"Bearer {st.session_state.token}"
-                    }
-                )
-
-                if response.status_code == 200:
-
-                    data = response.json()
-
-                    st.session_state.evaluation = (
-                        data["evaluation"]
+                        "Please enter an answer first."
                     )
+
+                else:
+
+                    response = requests.post(
+                        f"{BACKEND_URL}/evaluate-answer",
+                        json={
+                            "session_id":
+                                st.session_state.session_id,
+
+                            "question":
+                                st.session_state.question,
+
+                            "answer":
+                                current_answer,
+
+                            "role": role,
+                            "topic": topic,
+                            "difficulty": difficulty
+                        },
+                        headers={
+                            "Authorization":
+                                f"Bearer {st.session_state.token}"
+                        }
+                    )
+
+                    if response.status_code == 200:
+
+                        data = response.json()
+
+                        st.session_state.evaluation = (
+                            data["evaluation"]
+                        )
+
+                        st.rerun()
 
         with col2:
 
             if st.button("Next Question"):
-                st.session_state.evaluation = ""
 
                 response = requests.post(
                     f"{BACKEND_URL}/generate-question",
@@ -594,11 +672,11 @@ elif page == "Mock Interview":
                         "difficulty": difficulty,
                         "resume_text": resume_text,
                         "previous_questions":
-                        st.session_state.previous_questions
+                            st.session_state.previous_questions
                     },
                     headers={
                         "Authorization":
-                        f"Bearer {st.session_state.token}"
+                            f"Bearer {st.session_state.token}"
                     }
                 )
 
@@ -609,16 +687,23 @@ elif page == "Mock Interview":
                     st.session_state.question = (
                         data["question"]
                     )
+
                     st.session_state.session_id = (
-    data["session_id"]
-)
+                        data["session_id"]
+                    )
 
                     st.session_state.previous_questions.append(
                         data["question"]
                     )
 
+                    # Clear everything for next question
                     st.session_state.evaluation = ""
+                    st.session_state.transcribed_text = ""
+                    st.session_state.last_audio_id = None
 
+                    st.rerun()
+
+        # ── Evaluation Result ──
         if st.session_state.evaluation:
 
             st.subheader("AI Evaluation")
@@ -630,6 +715,8 @@ elif page == "Mock Interview":
             if st.button("Reattempt Question"):
 
                 st.session_state.evaluation = ""
+                st.session_state.transcribed_text = ""
+                st.session_state.last_audio_id = None
 
                 st.rerun()
 # =========================

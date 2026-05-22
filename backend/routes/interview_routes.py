@@ -8,6 +8,10 @@ from services.ai_service import (
 )
 from models.interview_model import InterviewSession
 from database.db_config import db
+from flask import request
+from groq import Groq
+import tempfile
+import os
 
 interview_bp = Blueprint("interview", __name__)
 
@@ -107,3 +111,28 @@ def get_history():
         })
 
     return jsonify(history), 200
+@interview_bp.route("/transcribe-audio", methods=["POST"])
+def transcribe_audio():
+
+    audio_file = request.files["audio"]
+
+    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    temp_audio.close()
+
+    audio_file.save(temp_audio.name)
+
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+    with open(temp_audio.name, "rb") as file:
+
+        transcription = client.audio.transcriptions.create(
+    file=file,
+    model="whisper-large-v3",
+    language="en"
+)
+
+    os.remove(temp_audio.name)
+
+    return {
+        "text": transcription.text
+    }
