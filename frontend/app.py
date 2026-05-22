@@ -8,7 +8,7 @@ from streamlit_mic_recorder import mic_recorder
 
 st.set_page_config(page_title="InterviewIQ", layout="wide")
 
-BACKEND_URL = "http://127.0.0.1:5000"
+BACKEND_URL = "https://interviewiq-backend-2i3i.onrender.com"
 
 # =========================
 # SESSION STATE
