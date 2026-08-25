@@ -97,20 +97,21 @@ IMPORTANT:
 Only return the interview question.
 """
 
-    response = client.chat.completions.create(
-        model="gpt-oss-120b",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.7
-    )
-
-    question = response.choices[0].message.content
-
-    return question
+    try:
+        response = client.chat.completions.create(
+            model="gpt-oss-120b",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0.7
+        )
+        question = response.choices[0].message.content
+        return question
+    except Exception as e:
+        return f"GROQ_ERROR: {str(e)}"
 
     response = client.chat.completions.create(
         model="gpt-oss-120b",
