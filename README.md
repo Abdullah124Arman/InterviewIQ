@@ -6,7 +6,7 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-red)
 ![Flask](https://img.shields.io/badge/Flask-Backend-lightgrey)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-green)
-![LLaMA](https://img.shields.io/badge/LLaMA-3.3--70b-purple)
+![GPT](https://img.shields.io/badge/GPT--OSS--120B-purple)
 ![JWT](https://img.shields.io/badge/Auth-JWT-orange)
 
 ## 🌐 Live Demo
@@ -66,7 +66,7 @@ Built as a complete software product — not a demo — with real authentication
 | Frontend | Streamlit + Plotly + Pandas |
 | Backend | Flask + Flask-JWT-Extended + SQLAlchemy |
 | Database | PostgreSQL (Supabase) |
-| AI / LLM | LLaMA 3.3-70b via Groq API |
+| AI / LLM | GPT OSS 120B via Groq API |
 | Resume Parsing | PyPDF2 |
 | Authentication | JWT (JSON Web Tokens) |
 | Deployment | Streamlit Community Cloud (Frontend) + Render (Backend) |
@@ -87,7 +87,7 @@ Groq API generates personalized interview question
       ↓
 User submits answer
       ↓
-LLaMA 3.3-70b evaluates answer → Score + Feedback + Ideal Answer
+GPT OSS 120B evaluates answer → Score + Feedback + Ideal Answer
       ↓
 Results stored in PostgreSQL (Supabase)
       ↓
