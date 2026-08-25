@@ -15,15 +15,6 @@ import os
 
 interview_bp = Blueprint("interview", __name__)
 
-@interview_bp.route("/models", methods=["GET"])
-def get_groq_models():
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    try:
-        models = client.models.list()
-        return jsonify([m.id for m in models.data]), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 @interview_bp.route("/generate-question", methods=["POST"])
 @jwt_required()
 def generate_question():
