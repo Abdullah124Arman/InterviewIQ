@@ -98,7 +98,7 @@ Only return the interview question.
 """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-70b-versatile",
         messages=[
             {
                 "role": "user",
@@ -113,7 +113,7 @@ Only return the interview question.
     return question
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-70b-versatile",
         messages=[
             {
                 "role": "user",
@@ -167,7 +167,7 @@ Ideal Answer:
 """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-70b-versatile",
         messages=[
             {
                 "role": "user",
